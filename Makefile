@@ -1,4 +1,4 @@
-include .env
+include config.env
 
 build:
 	docker compose build

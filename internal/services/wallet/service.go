@@ -1,4 +1,4 @@
-package userservice
+package walletservice
 
 type Service struct {
 	repo ReadWriter

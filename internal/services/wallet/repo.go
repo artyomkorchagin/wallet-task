@@ -1,4 +1,4 @@
-package userservice
+package walletservice
 
 type Reader interface {
 }

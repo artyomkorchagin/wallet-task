@@ -8,7 +8,7 @@ import (
 )
 
 func LoadConfig() {
-	viper.SetConfigFile("./.env")
+	viper.SetConfigFile("./config.env")
 
 	viper.AutomaticEnv()
 
@@ -25,4 +25,16 @@ func GetDSN() string {
 		viper.GetString("DB_USER"),
 		viper.GetString("DB_PASSWORD"),
 		viper.GetString("DB_SSLMODE"))
+}
+
+func GetServerPort() string {
+	return viper.GetString("SERVER_PORT")
+}
+
+func GetServerHost() string {
+	return viper.GetString("SERVER_HOST")
+}
+
+func GetEnv() string {
+	return viper.GetString("ENV")
 }

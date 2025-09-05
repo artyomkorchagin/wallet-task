@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"github.com/artyomkorchagin/gin-boilerplate/internal/types"
+	"github.com/artyomkorchagin/wallet-task/internal/types"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

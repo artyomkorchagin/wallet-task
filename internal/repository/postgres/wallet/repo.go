@@ -1,4 +1,4 @@
-package userpostgresql
+package walletpostgresql
 
 import (
 	"database/sql"

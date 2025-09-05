@@ -12,10 +12,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/artyomkorchagin/gin-boilerplate/config"
-	"github.com/artyomkorchagin/gin-boilerplate/internal/logger"
-	"github.com/artyomkorchagin/gin-boilerplate/internal/router"
-	"github.com/spf13/viper"
+	"github.com/artyomkorchagin/wallet-task/config"
+	"github.com/artyomkorchagin/wallet-task/internal/logger"
+	walletpostgresql "github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet"
+	"github.com/artyomkorchagin/wallet-task/internal/router"
+	walletservice "github.com/artyomkorchagin/wallet-task/internal/services/wallet"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -37,7 +38,7 @@ func main() {
 	var zapLogger *zap.Logger
 	var err error
 
-	if viper.GetString("ENV") == "development" {
+	if config.GetEnv() == "DEV" {
 		zapLogger, err = logger.NewDevelopmentLogger()
 	} else {
 		zapLogger, err = logger.NewLogger()
@@ -60,24 +61,25 @@ func main() {
 	}
 	zapLogger.Info("Connected to database")
 
-	if err := somepostgresql.RunMigrations(db); err != nil {
+	if err := walletpostgresql.RunMigrations(db); err != nil {
 		zapLogger.Fatal("Failed to run up migration", zap.Error(err))
 	}
 	zapLogger.Info("Succesfully ran up migration")
 
-	someRepo := somepostgresql.NewRepository(db)
-	someSvc := someservice.NewService(someRepo)
+	walletRepo := walletpostgresql.NewRepository(db)
+	walletSvc := walletservice.NewService(walletRepo)
 
-	handler := router.NewHandler(userSvc, zapLogger)
+	handler := router.NewHandler(walletSvc, zapLogger)
 	r := handler.InitRouter()
 
+	port := config.GetServerPort()
 	srv := &http.Server{
-		Addr:    ":" + viper.GetString("SERVER_PORT"),
+		Addr:    config.GetServerHost() + ":" + port,
 		Handler: r,
 	}
 
 	go func() {
-		zapLogger.Info("Server starting", zap.String("port", viper.GetString("SERVER_PORT")))
+		zapLogger.Info("Server starting", zap.String("port", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zapLogger.Fatal("Server failed to start", zap.Error(err))
 		}
