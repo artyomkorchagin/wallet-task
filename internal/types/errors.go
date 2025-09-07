@@ -1,6 +1,9 @@
 package types
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 // @name HTTPError
 // @description Standard error response returned by the API
@@ -30,4 +33,14 @@ var (
 	ErrBadRequest          = func(err error) HTTPError { return HTTPError{Code: http.StatusBadRequest, Err: err} }
 	ErrNotFound            = func(err error) HTTPError { return HTTPError{Code: http.StatusNotFound, Err: err} }
 	ErrInternalServerError = func(err error) HTTPError { return HTTPError{Code: http.StatusInternalServerError, Err: err} }
+	ErrConflict            = func(err error) HTTPError { return HTTPError{Code: http.StatusConflict, Err: err} }
+)
+
+var (
+	ErrWalletNotFound    = errors.New("wallet not found")
+	ErrInsufficientFunds = errors.New("insufficient funds")
+	ErrConcurrentUpdate  = errors.New("concurrent update detected, retry required")
+	ErrInvalidOperation  = errors.New("invalid operation type, must be DEPOSIT or WITHDRAW")
+	ErrOperationExists   = errors.New("operation with this reference_id already exists")
+	ErrDB                = errors.New("database error")
 )

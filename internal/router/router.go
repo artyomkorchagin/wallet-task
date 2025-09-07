@@ -32,7 +32,7 @@ func (h *Handler) InitRouter() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	main := router.Group("/api/v1/")
+	main := router.Group("/")
 	{
 		main.GET("/status", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})

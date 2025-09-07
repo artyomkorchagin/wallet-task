@@ -1,15 +1,16 @@
-FROM golang:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /app/backend ./cmd/main.go
+RUN go build -o /app/wallet-service ./cmd/main.go
 
 FROM alpine:3.18
 WORKDIR /app
 COPY --from=builder /app/backend /app/backend
-COPY --from=builder /app/migrations /app/migrations
-COPY --from=builder /app/docs /app/docs
-COPY --from=builder /app/.env /app/.env
+COPY  ./migrations /app/migrations
+COPY ./docs /app/docs
+COPY ./config.env /app/config.env
+COPY ./postgresql.conf ./db/postgresql.conf
 EXPOSE 3000
-CMD ["/app/backend"]
+CMD ["/app/wallet-service"]

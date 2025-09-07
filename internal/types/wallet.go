@@ -1,19 +1,22 @@
 package types
 
-import (
-	"github.com/google/uuid"
-)
-
 type WalletUpdateRequest struct {
-	WalletUUID    uuid.UUID `json:"wallet_uuid"`
-	OperationType string    `json:"operation_type"`
-	Amount        int       `json:"amount"`
+	WalletUUID  string `json:"valletId" binding:"required,uuid4"`
+	Operation   string `json:"operationType" binding:"required,oneof=DEPOSIT WITHDRAW"`
+	Amount      int    `json:"amount" binding:"required,gt=0"`
+	ReferenceID string
 }
 
-func NewWalletUpdateRequest(walletUUID uuid.UUID, operationType string, amount int) *WalletUpdateRequest {
+func NewWalletUpdateRequest(walletUUID string, operationType string, amount int, referenceid string) *WalletUpdateRequest {
 	return &WalletUpdateRequest{
 		walletUUID,
 		operationType,
 		amount,
+		referenceid,
 	}
 }
+
+var (
+	OperationTypeDeposit  = "DEPOSIT"
+	OperationTypeWithdraw = "WITHDRAW"
+)
