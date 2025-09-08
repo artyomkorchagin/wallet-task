@@ -1,0 +1,890 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/artyomkorchagin/wallet-task/cmd/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/artyomkorchagin/wallet-task/config/config.go (89.7%)</option>
+				
+				<option value="file2">github.com/artyomkorchagin/wallet-task/internal/infrastructure/redis.go (0.0%)</option>
+				
+				<option value="file3">github.com/artyomkorchagin/wallet-task/internal/logger/logger.go (100.0%)</option>
+				
+				<option value="file4">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/CheckOperationExists.go (100.0%)</option>
+				
+				<option value="file5">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/GetBalance.go (100.0%)</option>
+				
+				<option value="file6">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/UpdateWallet.go (75.6%)</option>
+				
+				<option value="file7">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/repo.go (16.7%)</option>
+				
+				<option value="file8">github.com/artyomkorchagin/wallet-task/internal/services/wallet/GetBalance.go (93.5%)</option>
+				
+				<option value="file9">github.com/artyomkorchagin/wallet-task/internal/services/wallet/UpdateBalance.go (54.4%)</option>
+				
+				<option value="file10">github.com/artyomkorchagin/wallet-task/internal/services/wallet/service.go (100.0%)</option>
+				
+				<option value="file11">github.com/artyomkorchagin/wallet-task/internal/types/errors.go (100.0%)</option>
+				
+				<option value="file12">github.com/artyomkorchagin/wallet-task/internal/types/wallet.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "context"
+        "database/sql"
+        "log"
+        "net/http"
+        "os"
+        "os/signal"
+        "syscall"
+        "time"
+
+        "go.uber.org/zap"
+
+        "github.com/artyomkorchagin/wallet-task/config"
+        "github.com/artyomkorchagin/wallet-task/internal/infrastructure"
+        "github.com/artyomkorchagin/wallet-task/internal/logger"
+        walletpostgresql "github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet"
+        "github.com/artyomkorchagin/wallet-task/internal/router"
+        walletservice "github.com/artyomkorchagin/wallet-task/internal/services/wallet"
+
+        _ "github.com/jackc/pgx/v5/stdlib"
+)
+
+//        @title                        Comfortel Task
+//        @version                1.0
+
+//        @contact.name        Artyom Korchagin
+//        @contact.email        artyomkorchagin333@gmail.com
+
+//        @host                localhost:3000
+//        @BasePath        /
+
+func main() <span class="cov0" title="0">{
+        var err error
+
+        cfg, err := config.LoadConfig()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Failed to load config:", err)
+        }</span>
+        <span class="cov0" title="0">var zapLogger *zap.Logger
+
+        if cfg.LogMode == "DEV" </span><span class="cov0" title="0">{
+                zapLogger, err = logger.NewDevelopmentLogger()
+        }</span> else<span class="cov0" title="0"> {
+                zapLogger, err = logger.NewLogger()
+        }</span>
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Failed to initialize logger:", err)
+        }</span>
+        <span class="cov0" title="0">defer zapLogger.Sync()
+
+        zapLogger.Info("Starting application")
+        zapLogger.Info("Connecting to database")
+        db, err := sql.Open("pgx", cfg.GetDSN())
+        if err != nil </span><span class="cov0" title="0">{
+                zapLogger.Fatal("Failed to connect to database", zap.Error(err))
+        }</span>
+
+        <span class="cov0" title="0">zapLogger.Info("Pinging database")
+        if err := db.Ping(); err != nil </span><span class="cov0" title="0">{
+                zapLogger.Fatal("Failed to ping database", zap.Error(err))
+        }</span>
+        <span class="cov0" title="0">zapLogger.Info("Connected to database")
+
+        zapLogger.Info("Running migrations")
+        if err := walletpostgresql.RunMigrations(db); err != nil </span><span class="cov0" title="0">{
+                zapLogger.Fatal("Failed to run up migration", zap.Error(err))
+        }</span>
+        <span class="cov0" title="0">zapLogger.Info("Succesfully ran up migration")
+
+        zapLogger.Info("Connecting to redis")
+        rAddr := cfg.Redis.Host + cfg.Redis.Port
+        rdb, err := infrastructure.NewRedisClient(rAddr, cfg.Redis.Password)
+        if err != nil </span><span class="cov0" title="0">{
+                zapLogger.Fatal("Failed to connect to redis", zap.Error(err))
+        }</span>
+
+        <span class="cov0" title="0">zapLogger.Info("Connected to redis")
+
+        walletRepo := walletpostgresql.NewRepository(db)
+        walletSvc := walletservice.NewService(walletRepo, rdb, zapLogger)
+
+        handler := router.NewHandler(walletSvc, zapLogger)
+        r := handler.InitRouter()
+
+        port := cfg.Server.Port
+        srv := &amp;http.Server{
+                Addr:    cfg.Server.Host + ":" + port,
+                Handler: r,
+        }
+
+        go func() </span><span class="cov0" title="0">{
+                zapLogger.Info("Server starting", zap.String("port", port))
+                if err := srv.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed </span><span class="cov0" title="0">{
+                        zapLogger.Fatal("Server failed to start", zap.Error(err))
+                }</span>
+        }()
+
+        <span class="cov0" title="0">quit := make(chan os.Signal, 1)
+        signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+        &lt;-quit
+
+        zapLogger.Info("Shutting down server...")
+
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer cancel()
+
+        if err := srv.Shutdown(ctx); err != nil </span><span class="cov0" title="0">{
+                zapLogger.Error("Server shutdown failed", zap.Error(err))
+        }</span>
+
+        <span class="cov0" title="0">zapLogger.Info("Server exited")
+
+        if err := db.Close(); err != nil </span><span class="cov0" title="0">{
+                zapLogger.Error("Error closing database connection", zap.Error(err))
+        }</span>
+
+        <span class="cov0" title="0">zapLogger.Info("Shutdown completed")</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package config
+
+import (
+        "fmt"
+
+        "github.com/spf13/viper"
+)
+
+type Config struct {
+        DB      DBConfig     `mapstructure:",squash"`
+        Server  ServerConfig `mapstructure:",squash"`
+        Redis   RedisConfig  `mapstructure:",squash"`
+        LogMode string       `mapstructure:"LOG_MODE"`
+}
+
+type DBConfig struct {
+        Host     string `mapstructure:"DB_HOST"`
+        Port     int    `mapstructure:"DB_PORT"`
+        User     string `mapstructure:"DB_USER"`
+        Password string `mapstructure:"DB_PASSWORD"`
+        Name     string `mapstructure:"DB_NAME"`
+        SSLMode  string `mapstructure:"DB_SSLMODE"`
+}
+
+type ServerConfig struct {
+        Host string `mapstructure:"SERVER_HOST"`
+        Port string `mapstructure:"SERVER_PORT"`
+}
+
+type RedisConfig struct {
+        Host     string `mapstructure:"REDIS_HOST"`
+        Port     string `mapstructure:"REDIS_PORT"`
+        Password string `mapstructure:"REDIS_PASSWORD"`
+}
+
+func LoadConfig() (*Config, error) <span class="cov8" title="1">{
+        viper.SetConfigName("config")
+        viper.SetConfigType("env")
+        viper.AddConfigPath(".")
+        if err := viper.ReadInConfig(); err != nil </span><span class="cov8" title="1">{
+                if _, ok := err.(viper.ConfigFileNotFoundError); !ok </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to read config: %w", err)
+                }</span>
+        }
+
+        <span class="cov8" title="1">viper.AutomaticEnv()
+
+        var cfg Config
+        if err := viper.Unmarshal(&amp;cfg); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if err := cfg.Validate(); err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("invalid config: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;cfg, nil</span>
+}
+
+func (cfg *Config) GetDSN() string <span class="cov8" title="1">{
+        return fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
+                cfg.DB.Host,
+                cfg.DB.Port,
+                cfg.DB.Name,
+                cfg.DB.User,
+                cfg.DB.Password,
+                cfg.DB.SSLMode)
+}</span>
+
+func (cfg *Config) Validate() error <span class="cov8" title="1">{
+        if cfg.DB.Host == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("DB_HOST is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.DB.Password == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("DB_PASSWORD is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.DB.SSLMode == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("DB_SSLMODE is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.DB.Host == "" </span><span class="cov0" title="0">{
+                return fmt.Errorf("DB_HOST is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.DB.User == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("DB_USER is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.DB.Name == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("DB_NAME is required")
+        }</span>
+        <span class="cov8" title="1">if cfg.Server.Port == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("SERVER_PORT is required")
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package infrastructure
+
+import (
+        "context"
+
+        "github.com/redis/go-redis/v9"
+)
+
+func NewRedisClient(addr, pass string) (*redis.Client, error) <span class="cov0" title="0">{
+        rdb := redis.NewClient(&amp;redis.Options{
+                Addr:     addr,
+                Password: pass,
+                DB:       0,
+        })
+
+        if _, err := rdb.Ping(context.Background()).Result(); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return rdb, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package logger
+
+import (
+        "go.uber.org/zap"
+        "go.uber.org/zap/zapcore"
+)
+
+func NewLogger() (*zap.Logger, error) <span class="cov8" title="1">{
+        config := zap.NewProductionConfig()
+        config.EncoderConfig.TimeKey = "timestamp"
+        config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+        config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+
+        return config.Build()
+}</span>
+
+func NewDevelopmentLogger() (*zap.Logger, error) <span class="cov8" title="1">{
+        config := zap.NewDevelopmentConfig()
+        config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+        return config.Build()
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package walletpostgresql
+
+import (
+        "context"
+        "fmt"
+)
+
+func (r *Repository) CheckOperationExists(ctx context.Context, referenceID string) (bool, error) <span class="cov8" title="1">{
+        var exists bool
+        query := "SELECT EXISTS(SELECT 1 FROM wallet_operations WHERE reference_id = $1)"
+
+        err := r.db.QueryRowContext(ctx, query, referenceID).Scan(&amp;exists)
+        if err != nil </span><span class="cov8" title="1">{
+                return false, fmt.Errorf("failed to check operation existence: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return exists, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package walletpostgresql
+
+import (
+        "context"
+        "database/sql"
+        "fmt"
+
+        "github.com/artyomkorchagin/wallet-task/internal/types"
+)
+
+func (r *Repository) GetBalance(ctx context.Context, walletUUID string) (int, error) <span class="cov8" title="1">{
+        var balance int
+
+        query := "SELECT balance FROM wallet WHERE wallet_uuid = $1"
+        err := r.db.QueryRowContext(ctx, query, walletUUID).Scan(&amp;balance)
+
+        if err != nil </span><span class="cov8" title="1">{
+                if err == sql.ErrNoRows </span><span class="cov8" title="1">{
+                        return 0, types.ErrWalletNotFound
+                }</span>
+                <span class="cov8" title="1">return 0, fmt.Errorf("failed to get balance: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">return balance, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package walletpostgresql
+
+import (
+        "context"
+        "database/sql"
+        "fmt"
+        "time"
+
+        "github.com/artyomkorchagin/wallet-task/internal/types"
+)
+
+func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequest) error <span class="cov8" title="1">{
+        var cancel context.CancelFunc
+        ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+        defer cancel()
+        tx, err := r.db.BeginTx(ctx, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to begin transaction: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
+                if err != nil </span><span class="cov8" title="1">{
+                        _ = r.markOperationFailed(ctx, req.ReferenceID)
+                }</span>
+                <span class="cov8" title="1">tx.Rollback()</span>
+        }()
+
+        <span class="cov8" title="1">_, err = tx.ExecContext(ctx, `
+        INSERT INTO wallet_operations 
+            (wallet_id, operation_type, amount, reference_id, status, created_at)
+        VALUES ($1, $2, $3, $4, 'PENDING', NOW())
+    `, req.WalletUUID, req.Operation, req.Amount, req.ReferenceID)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to log operation: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">var currentBalance, currentVersion int
+        err = tx.QueryRowContext(ctx, `
+        SELECT balance, version FROM wallet WHERE wallet_uuid = $1
+    `, req.WalletUUID).Scan(&amp;currentBalance, &amp;currentVersion)
+
+        if err != nil </span><span class="cov8" title="1">{
+                if err == sql.ErrNoRows </span><span class="cov0" title="0">{
+                        return types.ErrWalletNotFound
+                }</span>
+                <span class="cov8" title="1">return fmt.Errorf("failed to load wallet: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">newBalance := currentBalance
+        if req.Operation != "DEPOSIT" &amp;&amp; req.Operation != "WITHDRAW" </span><span class="cov0" title="0">{
+                return types.ErrInvalidOperation
+        }</span>
+        <span class="cov8" title="1">if req.Operation == "DEPOSIT" </span><span class="cov8" title="1">{
+                newBalance += req.Amount
+        }</span>
+        <span class="cov8" title="1">if req.Operation == "WITHDRAW" </span><span class="cov0" title="0">{
+                if currentBalance &lt; req.Amount </span><span class="cov0" title="0">{
+                        return types.ErrInsufficientFunds
+                }</span>
+                <span class="cov0" title="0">newBalance -= req.Amount</span>
+        }
+
+        <span class="cov8" title="1">result, err := tx.ExecContext(ctx, `
+        UPDATE wallet SET balance = $1, version = version + 1, updated_at = NOW()
+        WHERE wallet_uuid = $2 AND version = $3
+    `, newBalance, req.WalletUUID, currentVersion)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to update wallet: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if rows, _ := result.RowsAffected(); rows == 0 </span><span class="cov0" title="0">{
+                return types.ErrConcurrentUpdate
+        }</span>
+
+        <span class="cov8" title="1">_, err = tx.ExecContext(ctx, `
+        UPDATE wallet_operations 
+        SET status = 'APPLIED', applied_at = NOW() 
+        WHERE reference_id = $1
+    `, req.ReferenceID)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to mark as applied: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">if err = tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to commit: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (r *Repository) markOperationFailed(ctx context.Context, referenceID string) error <span class="cov8" title="1">{
+        _, err := r.db.ExecContext(ctx, `
+        UPDATE wallet_operations 
+        SET status = 'FAILED', applied_at = NOW() 
+        WHERE reference_id = $1 AND status = 'PENDING'
+    `, referenceID)
+        return err
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package walletpostgresql
+
+import (
+        "database/sql"
+        "fmt"
+
+        "github.com/pressly/goose"
+)
+
+type Repository struct {
+        db *sql.DB
+}
+
+func NewRepository(db *sql.DB) *Repository <span class="cov8" title="1">{
+        return &amp;Repository{
+                db: db,
+        }
+}</span>
+
+func RunMigrations(db *sql.DB) error <span class="cov0" title="0">{
+        if err := goose.SetDialect("postgres"); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to set dialect: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">if err := goose.Up(db, "migrations"); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to run migrations: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package walletservice
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "time"
+
+        "github.com/artyomkorchagin/wallet-task/internal/types"
+        "github.com/google/uuid"
+        "go.uber.org/zap"
+)
+
+func (s *Service) GetBalance(ctx context.Context, walletUUID string) (int, error) <span class="cov8" title="1">{
+        start := time.Now()
+        logger := s.logger.With(zap.String("wallet_uuid", walletUUID))
+        defer func() </span><span class="cov8" title="1">{
+                duration := time.Since(start)
+                if duration &gt; 100*time.Millisecond </span><span class="cov0" title="0">{
+                        logger.Warn("GetBalance slow",
+                                zap.Duration("duration", duration))
+                }</span> else<span class="cov8" title="1"> {
+                        logger.Debug("GetBalance finished",
+                                zap.Duration("duration", duration))
+                }</span>
+        }()
+        <span class="cov8" title="1">logger.Info("GetBalance called")
+
+        if walletUUID == "" </span><span class="cov8" title="1">{
+                logger.Warn("GetBalance: walletUUID is empty")
+                return 0, types.ErrBadRequest(fmt.Errorf("walletUUID is empty"))
+        }</span>
+
+        <span class="cov8" title="1">_, err := uuid.Parse(walletUUID)
+        if err != nil </span><span class="cov8" title="1">{
+                logger.Warn("GetBalance: invalid UUID",
+                        zap.Error(err))
+                return 0, types.ErrBadRequest(fmt.Errorf("walletUUID is not valid: %w", err))
+        }</span>
+
+        <span class="cov8" title="1">cacheKey := "wallet:balance:" + walletUUID
+
+        if balance, err := s.redis.Get(ctx, cacheKey).Int(); err == nil </span><span class="cov8" title="1">{
+                logger.Debug("GetBalance: cache hit",
+                        zap.Int("balance", balance))
+                return balance, nil
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("GetBalance: cache miss",
+                zap.String("cache_key", cacheKey))
+
+        balance, err := s.repo.GetBalance(ctx, walletUUID)
+        if err != nil </span><span class="cov8" title="1">{
+                logger.Error("GetBalance: failed to load from repository",
+                        zap.Error(err))
+
+                if errors.Is(err, types.ErrWalletNotFound) </span><span class="cov8" title="1">{
+                        return 0, types.ErrNotFound(err)
+                }</span>
+                <span class="cov8" title="1">return 0, types.ErrInternalServerError(err)</span>
+        }
+
+        <span class="cov8" title="1">if setErr := s.redis.Set(ctx, cacheKey, balance, 15*time.Second).Err(); setErr != nil </span><span class="cov8" title="1">{
+                logger.Warn("GetBalance: failed to set cache",
+                        zap.String("cache_key", cacheKey),
+                        zap.Error(setErr))
+                // Не возвращаем ошибку, кеш опционален
+        }</span> else<span class="cov0" title="0"> {
+                logger.Debug("GetBalance: balance cached",
+                        zap.Int("balance", balance),
+                        zap.Duration("ttl", 15*time.Second))
+        }</span>
+
+        <span class="cov8" title="1">logger.Info("GetBalance: success",
+                zap.Int("balance", balance))
+
+        return balance, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package walletservice
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "math/rand"
+        "strings"
+        "time"
+
+        "github.com/artyomkorchagin/wallet-task/internal/types"
+        "github.com/google/uuid"
+        "go.uber.org/zap"
+)
+
+func (s *Service) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequest) error <span class="cov8" title="1">{
+        maxRetries := 3
+        for i := 0; i &lt; maxRetries; i++ </span><span class="cov8" title="1">{
+                err := s.updateBalanceOnce(ctx, req)
+                if err != nil </span><span class="cov8" title="1">{
+                        if strings.Contains(err.Error(), "deadlock detected") </span><span class="cov0" title="0">{
+                                s.logger.Warn("Deadlock detected, retrying...",
+                                        zap.Int("attempt", i+1),
+                                        zap.String("wallet_uuid", req.WalletUUID))
+                                time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+                                continue</span>
+                        }
+                        <span class="cov8" title="1">return err</span>
+                }
+                <span class="cov0" title="0">return nil</span>
+        }
+        <span class="cov0" title="0">return types.ErrConflict(fmt.Errorf("too many retries due to deadlock"))</span>
+}
+
+func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdateRequest) error <span class="cov8" title="1">{
+        start := time.Now()
+        logger := s.logger.With(zap.String("wallet_uuid", wur.WalletUUID))
+        defer func() </span><span class="cov8" title="1">{
+                duration := time.Since(start)
+                if duration &gt; 100*time.Millisecond </span><span class="cov0" title="0">{
+                        logger.Warn("UpdateBalance slow",
+                                zap.Duration("duration", duration))
+                }</span> else<span class="cov8" title="1"> {
+                        logger.Debug("UpdateBalance finished",
+                                zap.Duration("duration", duration))
+                }</span>
+        }()
+        <span class="cov8" title="1">logger.Info("UpdateBalance called",
+                zap.String("operation", wur.Operation),
+                zap.Int("amount", wur.Amount),
+                zap.String("reference_id", wur.ReferenceID),
+        )
+
+        if wur.WalletUUID == "" </span><span class="cov8" title="1">{
+                logger.Warn("UpdateBalance: walletUUID is empty")
+                return types.ErrBadRequest(fmt.Errorf("walletUUID is empty"))
+        }</span>
+
+        <span class="cov8" title="1">if wur.Amount &lt;= 0 </span><span class="cov0" title="0">{
+                logger.Warn("UpdateBalance: invalid amount",
+                        zap.Int("amount", wur.Amount))
+                return types.ErrBadRequest(fmt.Errorf("amount must be positive"))
+        }</span>
+
+        <span class="cov8" title="1">if wur.Operation != types.OperationTypeDeposit &amp;&amp; wur.Operation != types.OperationTypeWithdraw </span><span class="cov0" title="0">{
+                logger.Warn("UpdateBalance: invalid operation type",
+                        zap.String("operation", wur.Operation))
+                return types.ErrBadRequest(fmt.Errorf(
+                        "operation must be either %s or %s",
+                        types.OperationTypeDeposit,
+                        types.OperationTypeWithdraw,
+                ))
+        }</span>
+
+        <span class="cov8" title="1">if _, err := uuid.Parse(wur.ReferenceID); err != nil </span><span class="cov0" title="0">{
+                logger.Warn("UpdateBalance: invalid reference_id",
+                        zap.String("reference_id", wur.ReferenceID),
+                        zap.Error(err))
+                return types.ErrBadRequest(fmt.Errorf("ReferenceID is not valid UUID: %w", err))
+        }</span>
+
+        <span class="cov8" title="1">if _, err := uuid.Parse(wur.WalletUUID); err != nil </span><span class="cov0" title="0">{
+                logger.Warn("UpdateBalance: invalid wallet_uuid", zap.Error(err))
+                return types.ErrBadRequest(fmt.Errorf("WalletUUID is not valid UUID: %w", err))
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("UpdateBalance: checking idempotency",
+                zap.String("reference_id", wur.ReferenceID))
+        exists, err := s.repo.CheckOperationExists(ctx, wur.ReferenceID)
+        if err != nil </span><span class="cov0" title="0">{
+                logger.Error("UpdateBalance: failed to check idempotency",
+                        zap.String("reference_id", wur.ReferenceID),
+                        zap.Error(err))
+                return types.ErrInternalServerError(fmt.Errorf("failed to check idempotency: %w", err))
+        }</span>
+
+        <span class="cov8" title="1">if exists </span><span class="cov8" title="1">{
+                logger.Warn("UpdateBalance: idempotency conflict")
+                return types.ErrConflict(fmt.Errorf("operation with reference_id %s already processed", wur.ReferenceID))
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("UpdateBalance: idempotency check passed",
+                zap.String("reference_id", wur.ReferenceID))
+
+        if err = s.repo.UpdateBalance(ctx, wur); err != nil </span><span class="cov8" title="1">{
+                switch </span>{
+                case errors.Is(err, types.ErrWalletNotFound):<span class="cov8" title="1">
+                        logger.Info("UpdateBalance: wallet not found")
+                        return types.ErrNotFound(err)</span>
+                case errors.Is(err, types.ErrInsufficientFunds):<span class="cov0" title="0">
+                        logger.Info("UpdateBalance: insufficient funds",
+                                zap.Int("amount", wur.Amount))
+                        return types.ErrBadRequest(err)</span>
+                case errors.Is(err, types.ErrConcurrentUpdate):<span class="cov0" title="0">
+                        logger.Warn("UpdateBalance: concurrent update",
+                                zap.String("reference_id", wur.ReferenceID))
+                        return types.ErrConflict(err)</span>
+                case errors.Is(err, types.ErrOperationExists):<span class="cov0" title="0">
+                        logger.Warn("UpdateBalance: operation exists (race)",
+                                zap.String("reference_id", wur.ReferenceID))
+                        return types.ErrConflict(err)</span>
+                default:<span class="cov0" title="0">
+                        logger.Error("UpdateBalance: unexpected error",
+                                zap.String("operation", wur.Operation),
+                                zap.Int("amount", wur.Amount),
+                                zap.Error(err))
+                        return types.ErrInternalServerError(err)</span>
+                }
+        }
+
+        <span class="cov0" title="0">logger.Info("UpdateBalance: success",
+                zap.String("operation", wur.Operation),
+                zap.Int("amount", wur.Amount),
+                zap.String("reference_id", wur.ReferenceID))
+
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package walletservice
+
+import (
+        "context"
+
+        "github.com/artyomkorchagin/wallet-task/internal/types"
+        "github.com/redis/go-redis/v9"
+        "go.uber.org/zap"
+)
+
+type ServiceInterface interface {
+        GetBalance(ctx context.Context, walletUUID string) (int, error)
+        UpdateBalance(ctx context.Context, req *types.WalletUpdateRequest) error
+}
+
+type Service struct {
+        repo   ReadWriter
+        redis  *redis.Client
+        logger *zap.Logger
+}
+
+func NewService(repo ReadWriter, redis *redis.Client, logger *zap.Logger) *Service <span class="cov8" title="1">{
+        return &amp;Service{
+                repo:   repo,
+                redis:  redis,
+                logger: logger,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package types
+
+import (
+        "errors"
+        "net/http"
+)
+
+// @name HTTPError
+// @description Standard error response returned by the API
+// @property Code
+// @type integer
+// @description HTTP status code
+// @property Err
+// @type error
+// @description Human-readable error message
+type HTTPErrorSwaggerWrapper HTTPError
+
+// HTTPError represents an error response returned by the API.
+// This is used to standardize error responses across the application.
+type HTTPError struct {
+        // HTTP status code
+        Code int `json:"code"`
+
+        // Error message
+        Err error `json:"error"`
+}
+
+func (e HTTPError) Error() string <span class="cov8" title="1">{
+        return e.Err.Error()
+}</span>
+
+var (
+        ErrBadRequest          = func(err error) HTTPError <span class="cov8" title="1">{ return HTTPError{Code: http.StatusBadRequest, Err: err} }</span>
+        ErrNotFound            = func(err error) HTTPError <span class="cov8" title="1">{ return HTTPError{Code: http.StatusNotFound, Err: err} }</span>
+        ErrInternalServerError = func(err error) HTTPError <span class="cov8" title="1">{ return HTTPError{Code: http.StatusInternalServerError, Err: err} }</span>
+        ErrConflict            = func(err error) HTTPError <span class="cov8" title="1">{ return HTTPError{Code: http.StatusConflict, Err: err} }</span>
+)
+
+var (
+        ErrWalletNotFound    = errors.New("wallet not found")
+        ErrInsufficientFunds = errors.New("insufficient funds")
+        ErrConcurrentUpdate  = errors.New("concurrent update detected, retry required")
+        ErrInvalidOperation  = errors.New("invalid operation type, must be DEPOSIT or WITHDRAW")
+        ErrOperationExists   = errors.New("operation with this reference_id already exists")
+        ErrDB                = errors.New("database error")
+)
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package types
+
+type WalletUpdateRequest struct {
+        WalletUUID  string `json:"valletId" binding:"required"`
+        Operation   string `json:"operationType" binding:"required,oneof=DEPOSIT WITHDRAW"`
+        Amount      int    `json:"amount" binding:"required,gt=0"`
+        ReferenceID string
+}
+
+func NewWalletUpdateRequest(walletUUID string, operationType string, amount int, referenceid string) *WalletUpdateRequest <span class="cov8" title="1">{
+        return &amp;WalletUpdateRequest{
+                walletUUID,
+                operationType,
+                amount,
+                referenceid,
+        }
+}</span>
+
+var (
+        OperationTypeDeposit  = "DEPOSIT"
+        OperationTypeWithdraw = "WITHDRAW"
+)
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
