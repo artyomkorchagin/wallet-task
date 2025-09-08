@@ -50,7 +50,7 @@ make build
 make up
 ```
 
-## Пример запроса
+## Формат запросов
 ```bash
 POST /api/v1/wallet
 {
@@ -58,9 +58,12 @@ POST /api/v1/wallet
   "operationType": "DEPOSIT",
   "amount": 100,
 }
-```
-```bash
 GET /api/v1/wallet/:uuid
+```
+## Пример запросов
+```bash
+curl -X GET http://localhost:3000/api/v1/wallet/a1b2c3e4-5678-9012-3456-789012345678
+curl -X POST http://localhost:3000/api/v1/wallet -H "Content-Type: application/json" -d "{\"valletId\": \"a1b2c3e4-5678-9012-3456-789012345678\", \"operationType\": \"WITHDRAW\", \"amount\": 100}"
 ```
 
 ## Заметки
