@@ -11,17 +11,6 @@ down:
 
 restart: down up
 
-db-up:
-	@echo "Running migrations..."
-	@goose -dir migrations postgres "$(DB_DSN)" up
-
-db-down:
-	@echo "Rolling back migrations..."
-	@goose -dir migrations postgres "$(DB_DSN)" down
-
-db-status:
-	@goose -dir migrations postgres "$(DB_DSN)" status
-
 test:
 	@go test -v ./...
 
