@@ -1,7 +1,7 @@
 package types
 
 type WalletUpdateRequest struct {
-	WalletUUID  string `json:"valletId" binding:"required,uuid4"`
+	WalletUUID  string `json:"valletId" binding:"required"`
 	Operation   string `json:"operationType" binding:"required,oneof=DEPOSIT WITHDRAW"`
 	Amount      int    `json:"amount" binding:"required,gt=0"`
 	ReferenceID string

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/artyomkorchagin/wallet-task/internal/types"
@@ -11,7 +13,26 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Service) UpdateBalance(ctx context.Context, wur *types.WalletUpdateRequest) error {
+func (s *Service) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequest) error {
+	maxRetries := 3
+	for i := 0; i < maxRetries; i++ {
+		err := s.updateBalanceOnce(ctx, req)
+		if err != nil {
+			if strings.Contains(err.Error(), "deadlock detected") {
+				s.logger.Warn("Deadlock detected, retrying...",
+					zap.Int("attempt", i+1),
+					zap.String("wallet_uuid", req.WalletUUID))
+				time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+				continue
+			}
+			return err
+		}
+		return nil
+	}
+	return types.ErrConflict(fmt.Errorf("too many retries due to deadlock"))
+}
+
+func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdateRequest) error {
 	start := time.Now()
 	logger := s.logger.With(zap.String("wallet_uuid", wur.WalletUUID))
 	defer func() {
@@ -65,7 +86,6 @@ func (s *Service) UpdateBalance(ctx context.Context, wur *types.WalletUpdateRequ
 
 	logger.Debug("UpdateBalance: checking idempotency",
 		zap.String("reference_id", wur.ReferenceID))
-
 	exists, err := s.repo.CheckOperationExists(ctx, wur.ReferenceID)
 	if err != nil {
 		logger.Error("UpdateBalance: failed to check idempotency",

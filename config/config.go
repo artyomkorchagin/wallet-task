@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	DB       DBConfig
-	Server   ServerConfig
-	Redis    RedisConfig
-	LogLevel string `mapstructure:"LOG_LEVEL"`
+	DB      DBConfig     `mapstructure:",squash"`
+	Server  ServerConfig `mapstructure:",squash"`
+	Redis   RedisConfig  `mapstructure:",squash"`
+	LogMode string       `mapstructure:"LOG_MODE"`
 }
 
 type DBConfig struct {
@@ -35,19 +35,13 @@ type RedisConfig struct {
 
 func LoadConfig() (*Config, error) {
 	viper.SetConfigName("config")
-	viper.SetConfigFile(".env")
+	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	viper.AutomaticEnv()
-
-	viper.SetDefault("DB_PORT", 5432)
-	viper.SetDefault("SERVER_HOST", "0.0.0.0")
-	viper.SetDefault("SERVER_PORT", "8080")
-	viper.SetDefault("DB_SSLMODE", "disable")
-	viper.SetDefault("LOG_LEVEL", "info")
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
@@ -61,17 +55,26 @@ func LoadConfig() (*Config, error) {
 	return &cfg, nil
 }
 
-func GetDSN() string {
-	return fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",
-		viper.GetString("DB_HOST"),
-		viper.GetString("DB_PORT"),
-		viper.GetString("DB_NAME"),
-		viper.GetString("DB_USER"),
-		viper.GetString("DB_PASSWORD"),
-		viper.GetString("DB_SSLMODE"))
+func (cfg *Config) GetDSN() string {
+	return fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
+		cfg.DB.Host,
+		cfg.DB.Port,
+		cfg.DB.Name,
+		cfg.DB.User,
+		cfg.DB.Password,
+		cfg.DB.SSLMode)
 }
 
 func (cfg *Config) Validate() error {
+	if cfg.DB.Host == "" {
+		return fmt.Errorf("DB_HOST is required")
+	}
+	if cfg.DB.Password == "" {
+		return fmt.Errorf("DB_PASSWORD is required")
+	}
+	if cfg.DB.SSLMode == "" {
+		return fmt.Errorf("DB_SSLMODE is required")
+	}
 	if cfg.DB.Host == "" {
 		return fmt.Errorf("DB_HOST is required")
 	}

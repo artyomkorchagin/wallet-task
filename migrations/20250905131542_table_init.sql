@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE IF NOT EXISTS wallet (
     wallet_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    balance NUMERIC(15, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
+    balance INTEGER NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
     version INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS wallet_operations (
     id BIGSERIAL PRIMARY KEY,
     wallet_id UUID NOT NULL REFERENCES wallet(wallet_uuid) ON DELETE CASCADE, 
     operation_type VARCHAR(10) NOT NULL CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW')),
-    amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    reference_id UUID NOT NULL UNIQUE,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPLIED', 'FAILED')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     applied_at TIMESTAMP WITH TIME ZONE

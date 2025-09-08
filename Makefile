@@ -1,13 +1,13 @@
 include config.env
 
 build:
-	docker compose build
+	docker compose --env-file ./config.env build
 
 up:
-	docker compose up
+	docker compose --env-file ./config.env up
 
 down:
-	docker compose down
+	docker compose --env-file ./config.env down
 
 restart: down up
 
@@ -23,7 +23,7 @@ db-status:
 	@goose -dir migrations postgres "$(DB_DSN)" status
 
 tests:
-	go test ./internal/repository/postgres/user/... -v
+	go test ./... -v
 	
 clean:
-	docker compose down -v --rmi all
+	docker compose --env-file ./config.env down -v --rmi all

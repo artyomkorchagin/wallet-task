@@ -40,7 +40,7 @@ func main() {
 	}
 	var zapLogger *zap.Logger
 
-	if cfg.LogLevel == "DEV" {
+	if cfg.LogMode == "DEV" {
 		zapLogger, err = logger.NewDevelopmentLogger()
 	} else {
 		zapLogger, err = logger.NewLogger()
@@ -53,7 +53,7 @@ func main() {
 
 	zapLogger.Info("Starting application")
 	zapLogger.Info("Connecting to database")
-	db, err := sql.Open("pgx", config.GetDSN())
+	db, err := sql.Open("pgx", cfg.GetDSN())
 	if err != nil {
 		zapLogger.Fatal("Failed to connect to database", zap.Error(err))
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/artyomkorchagin/wallet-task/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (h *Handler) getBalance(c *gin.Context) error {
@@ -26,6 +27,10 @@ func (h *Handler) updateBalance(c *gin.Context) error {
 	if err := c.ShouldBindJSON(&wur); err != nil {
 		return types.ErrBadRequest(fmt.Errorf("invalid request body: %w", err))
 	}
+
+	// it's supposed to be generated on the client side,
+	// but for this task there isnt one, so i'll simulate it
+	wur.ReferenceID = uuid.New().String()
 
 	if err := h.walletservice.UpdateBalance(c, wur); err != nil {
 		return err

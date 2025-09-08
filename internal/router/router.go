@@ -13,11 +13,11 @@ import (
 )
 
 type Handler struct {
-	walletservice *walletservice.Service
+	walletservice walletservice.ServiceInterface
 	logger        *zap.Logger
 }
 
-func NewHandler(walletservice *walletservice.Service, logger *zap.Logger) *Handler {
+func NewHandler(walletservice walletservice.ServiceInterface, logger *zap.Logger) *Handler {
 	return &Handler{
 		walletservice: walletservice,
 		logger:        logger,
@@ -43,8 +43,8 @@ func (h *Handler) InitRouter() *gin.Engine {
 
 	apiv1 := router.Group("/api/v1/")
 	{
-		apiv1.POST("/wallet", h.wrap(h.getBalance))
-		apiv1.GET("/wallet/:uuid", h.wrap(h.updateBalance))
+		apiv1.GET("/wallet/:uuid", h.wrap(h.getBalance))
+		apiv1.POST("/wallet", h.wrap(h.updateBalance))
 	}
 	h.logger.Info("Routes initialized")
 	return router

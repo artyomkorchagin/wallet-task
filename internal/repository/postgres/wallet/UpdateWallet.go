@@ -4,11 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/artyomkorchagin/wallet-task/internal/types"
 )
 
 func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequest) error {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -32,7 +36,7 @@ func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateR
 
 	var currentBalance, currentVersion int
 	err = tx.QueryRowContext(ctx, `
-        SELECT balance, version FROM wallet WHERE wallet_uuid = $1 FOR UPDATE
+        SELECT balance, version FROM wallet WHERE wallet_uuid = $1
     `, req.WalletUUID).Scan(&currentBalance, &currentVersion)
 
 	if err != nil {

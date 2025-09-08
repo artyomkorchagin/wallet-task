@@ -2,7 +2,6 @@ services:
   db:
     image: postgres:17
     container_name: wallet_db
-    env_file: config.env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -10,13 +9,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/postgresql/data
-      - ./db/postgresql.conf:/etc/postgresql/postgresql.conf
-    command: >
-      postgres -c config_file=/etc/postgresql/postgresql.conf
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wallet_user -d wallet_service"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,15 +24,10 @@ services:
     container_name: wallet_app
     ports:
       - "3000:3000"
-    environment:
-      SERVER_HOST: db
-      SERVER_PORT: ${SERVER_PORT}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_SSLMODE: ${DB_SSLMODE}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     deploy:
