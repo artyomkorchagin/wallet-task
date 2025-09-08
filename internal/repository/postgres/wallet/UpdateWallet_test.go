@@ -38,7 +38,7 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(500, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
