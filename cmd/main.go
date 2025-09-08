@@ -22,15 +22,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-//	@title			Comfortel Task
-//	@version		1.0
-
-//	@contact.name	Artyom Korchagin
-//	@contact.email	artyomkorchagin333@gmail.com
-
-//	@host		localhost:3000
-//	@BasePath	/
-
 func main() {
 	var err error
 
