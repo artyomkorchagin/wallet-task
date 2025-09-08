@@ -23,7 +23,9 @@ db-status:
 	@goose -dir migrations postgres "$(DB_DSN)" status
 
 tests:
-	go test ./... -v
+	go test -v -coverprofile ./tests/cover.out ./...
+	go tool cover -html ./tests/cover.out -o ./tests/cover.html
+	./tests/cover.html
 	
 clean:
 	docker compose --env-file ./config.env down -v --rmi all
