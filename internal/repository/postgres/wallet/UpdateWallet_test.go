@@ -38,15 +38,15 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(500, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet SET balance = \$1, version = version \+ 1, updated_at = NOW\(\) WHERE wallet_uuid = \$2 AND version = \$3`).
+		mock.ExpectExec(`UPDATE wallet SET balance =  $1, version = version  + 1, updated_at = NOW ( ) WHERE wallet_uuid =  $2 AND version =  $3`).
 			WithArgs(600, req.WalletUUID, 1).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'APPLIED', applied_at = NOW\(\) WHERE reference_id = \$1`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'APPLIED', applied_at = NOW ( ) WHERE reference_id =  $1`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -78,15 +78,15 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(100, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet SET balance = \$1, version = version \+ 1, updated_at = NOW\(\) WHERE wallet_uuid = \$2 AND version = \$3`).
+		mock.ExpectExec(`UPDATE wallet SET balance =  $1, version = version  + 1, updated_at = NOW ( ) WHERE wallet_uuid =  $2 AND version =  $3`).
 			WithArgs(50, req.WalletUUID, 1).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'APPLIED', applied_at = NOW\(\) WHERE reference_id = \$1`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'APPLIED', applied_at = NOW ( ) WHERE reference_id =  $1`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -114,11 +114,11 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WithArgs(req.WalletUUID, req.Operation, req.Amount, req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnError(sql.ErrNoRows)
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW\(\) WHERE reference_id = \$1 AND status = 'PENDING'`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW ( ) WHERE reference_id =  $1 AND status = 'PENDING'`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -151,11 +151,11 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(100, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW\(\) WHERE reference_id = \$1 AND status = 'PENDING'`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW ( ) WHERE reference_id =  $1 AND status = 'PENDING'`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -185,15 +185,15 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(500, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet SET balance = \$1, version = version \+ 1, updated_at = NOW\(\) WHERE wallet_uuid = \$2 AND version = \$3`).
+		mock.ExpectExec(`UPDATE wallet SET balance =  $1, version = version  + 1, updated_at = NOW ( ) WHERE wallet_uuid =  $2 AND version =  $3`).
 			WithArgs(600, req.WalletUUID, 1).
 			WillReturnResult(sqlmock.NewResult(1, 0)) // 0 rows affected
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW\(\) WHERE reference_id = \$1 AND status = 'PENDING'`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW ( ) WHERE reference_id =  $1 AND status = 'PENDING'`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -225,11 +225,11 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(500, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW\(\) WHERE reference_id = \$1 AND status = 'PENDING'`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW ( ) WHERE reference_id =  $1 AND status = 'PENDING'`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -284,15 +284,15 @@ func TestRepository_UpdateBalance(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		rows := sqlmock.NewRows([]string{"balance", "version"}).AddRow(500, 1)
-		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid = \$1 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT balance, version FROM wallet WHERE wallet_uuid =  $1 FOR UPDATE`).
 			WithArgs(req.WalletUUID).
 			WillReturnRows(rows)
 
-		mock.ExpectExec(`UPDATE wallet SET balance = \$1, version = version \+ 1, updated_at = NOW\(\) WHERE wallet_uuid = \$2 AND version = \$3`).
+		mock.ExpectExec(`UPDATE wallet SET balance =  $1, version = version  + 1, updated_at = NOW ( ) WHERE wallet_uuid =  $2 AND version =  $3`).
 			WithArgs(600, req.WalletUUID, 1).
 			WillReturnError(assert.AnError)
 
-		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW\(\) WHERE reference_id = \$1 AND status = 'PENDING'`).
+		mock.ExpectExec(`UPDATE wallet_operations SET status = 'FAILED', applied_at = NOW ( ) WHERE reference_id =  $1 AND status = 'PENDING'`).
 			WithArgs(req.ReferenceID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 

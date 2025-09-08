@@ -16,6 +16,14 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
+func setupService(t *testing.T) (*walletservice.Service, *MockRepository) {
+	redisMockClient, _ := redismock.NewClientMock()
+	logger := zaptest.NewLogger(t)
+	repo := new(MockRepository)
+	service := walletservice.NewService(repo, redisMockClient, logger)
+	return service, repo
+}
+
 func TestGetBalance_Validation(t *testing.T) {
 
 	service, _ := setupService(t)

@@ -73,13 +73,15 @@
 				
 				<option value="file8">github.com/artyomkorchagin/wallet-task/internal/services/wallet/GetBalance.go (93.5%)</option>
 				
-				<option value="file9">github.com/artyomkorchagin/wallet-task/internal/services/wallet/UpdateBalance.go (54.4%)</option>
+				<option value="file9">github.com/artyomkorchagin/wallet-task/internal/services/wallet/UpdateBalance.go (100.0%)</option>
 				
-				<option value="file10">github.com/artyomkorchagin/wallet-task/internal/services/wallet/service.go (100.0%)</option>
+				<option value="file10">github.com/artyomkorchagin/wallet-task/internal/services/wallet/mocks/mock_readwriter.go (0.0%)</option>
 				
-				<option value="file11">github.com/artyomkorchagin/wallet-task/internal/types/errors.go (100.0%)</option>
+				<option value="file11">github.com/artyomkorchagin/wallet-task/internal/services/wallet/service.go (100.0%)</option>
 				
-				<option value="file12">github.com/artyomkorchagin/wallet-task/internal/types/wallet.go (100.0%)</option>
+				<option value="file12">github.com/artyomkorchagin/wallet-task/internal/types/errors.go (100.0%)</option>
+				
+				<option value="file13">github.com/artyomkorchagin/wallet-task/internal/types/wallet.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -637,7 +639,7 @@ func (s *Service) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequ
         for i := 0; i &lt; maxRetries; i++ </span><span class="cov8" title="1">{
                 err := s.updateBalanceOnce(ctx, req)
                 if err != nil </span><span class="cov8" title="1">{
-                        if strings.Contains(err.Error(), "deadlock detected") </span><span class="cov0" title="0">{
+                        if strings.Contains(err.Error(), "deadlock detected") </span><span class="cov8" title="1">{
                                 s.logger.Warn("Deadlock detected, retrying...",
                                         zap.Int("attempt", i+1),
                                         zap.String("wallet_uuid", req.WalletUUID))
@@ -646,9 +648,9 @@ func (s *Service) UpdateBalance(ctx context.Context, req *types.WalletUpdateRequ
                         }
                         <span class="cov8" title="1">return err</span>
                 }
-                <span class="cov0" title="0">return nil</span>
+                <span class="cov8" title="1">return nil</span>
         }
-        <span class="cov0" title="0">return types.ErrConflict(fmt.Errorf("too many retries due to deadlock"))</span>
+        <span class="cov8" title="1">return types.ErrConflict(fmt.Errorf("too many retries due to deadlock"))</span>
 }
 
 func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdateRequest) error <span class="cov8" title="1">{
@@ -656,7 +658,7 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
         logger := s.logger.With(zap.String("wallet_uuid", wur.WalletUUID))
         defer func() </span><span class="cov8" title="1">{
                 duration := time.Since(start)
-                if duration &gt; 100*time.Millisecond </span><span class="cov0" title="0">{
+                if duration &gt; 100*time.Millisecond </span><span class="cov8" title="1">{
                         logger.Warn("UpdateBalance slow",
                                 zap.Duration("duration", duration))
                 }</span> else<span class="cov8" title="1"> {
@@ -675,13 +677,13 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
                 return types.ErrBadRequest(fmt.Errorf("walletUUID is empty"))
         }</span>
 
-        <span class="cov8" title="1">if wur.Amount &lt;= 0 </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if wur.Amount &lt;= 0 </span><span class="cov8" title="1">{
                 logger.Warn("UpdateBalance: invalid amount",
                         zap.Int("amount", wur.Amount))
                 return types.ErrBadRequest(fmt.Errorf("amount must be positive"))
         }</span>
 
-        <span class="cov8" title="1">if wur.Operation != types.OperationTypeDeposit &amp;&amp; wur.Operation != types.OperationTypeWithdraw </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if wur.Operation != types.OperationTypeDeposit &amp;&amp; wur.Operation != types.OperationTypeWithdraw </span><span class="cov8" title="1">{
                 logger.Warn("UpdateBalance: invalid operation type",
                         zap.String("operation", wur.Operation))
                 return types.ErrBadRequest(fmt.Errorf(
@@ -691,14 +693,14 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
                 ))
         }</span>
 
-        <span class="cov8" title="1">if _, err := uuid.Parse(wur.ReferenceID); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if _, err := uuid.Parse(wur.ReferenceID); err != nil </span><span class="cov8" title="1">{
                 logger.Warn("UpdateBalance: invalid reference_id",
                         zap.String("reference_id", wur.ReferenceID),
                         zap.Error(err))
                 return types.ErrBadRequest(fmt.Errorf("ReferenceID is not valid UUID: %w", err))
         }</span>
 
-        <span class="cov8" title="1">if _, err := uuid.Parse(wur.WalletUUID); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if _, err := uuid.Parse(wur.WalletUUID); err != nil </span><span class="cov8" title="1">{
                 logger.Warn("UpdateBalance: invalid wallet_uuid", zap.Error(err))
                 return types.ErrBadRequest(fmt.Errorf("WalletUUID is not valid UUID: %w", err))
         }</span>
@@ -706,7 +708,7 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
         <span class="cov8" title="1">logger.Debug("UpdateBalance: checking idempotency",
                 zap.String("reference_id", wur.ReferenceID))
         exists, err := s.repo.CheckOperationExists(ctx, wur.ReferenceID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 logger.Error("UpdateBalance: failed to check idempotency",
                         zap.String("reference_id", wur.ReferenceID),
                         zap.Error(err))
@@ -726,19 +728,19 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
                 case errors.Is(err, types.ErrWalletNotFound):<span class="cov8" title="1">
                         logger.Info("UpdateBalance: wallet not found")
                         return types.ErrNotFound(err)</span>
-                case errors.Is(err, types.ErrInsufficientFunds):<span class="cov0" title="0">
+                case errors.Is(err, types.ErrInsufficientFunds):<span class="cov8" title="1">
                         logger.Info("UpdateBalance: insufficient funds",
                                 zap.Int("amount", wur.Amount))
                         return types.ErrBadRequest(err)</span>
-                case errors.Is(err, types.ErrConcurrentUpdate):<span class="cov0" title="0">
+                case errors.Is(err, types.ErrConcurrentUpdate):<span class="cov8" title="1">
                         logger.Warn("UpdateBalance: concurrent update",
                                 zap.String("reference_id", wur.ReferenceID))
                         return types.ErrConflict(err)</span>
-                case errors.Is(err, types.ErrOperationExists):<span class="cov0" title="0">
+                case errors.Is(err, types.ErrOperationExists):<span class="cov8" title="1">
                         logger.Warn("UpdateBalance: operation exists (race)",
                                 zap.String("reference_id", wur.ReferenceID))
                         return types.ErrConflict(err)</span>
-                default:<span class="cov0" title="0">
+                default:<span class="cov8" title="1">
                         logger.Error("UpdateBalance: unexpected error",
                                 zap.String("operation", wur.Operation),
                                 zap.Int("amount", wur.Amount),
@@ -747,7 +749,7 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
                 }
         }
 
-        <span class="cov0" title="0">logger.Info("UpdateBalance: success",
+        <span class="cov8" title="1">logger.Info("UpdateBalance: success",
                 zap.String("operation", wur.Operation),
                 zap.Int("amount", wur.Amount),
                 zap.String("reference_id", wur.ReferenceID))
@@ -756,7 +758,179 @@ func (s *Service) updateBalanceOnce(ctx context.Context, wur *types.WalletUpdate
 }
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package walletservice
+		<pre class="file" id="file10" style="display: none">// Code generated by MockGen. DO NOT EDIT.
+// Source: ./internal/services/wallet/repo.go
+
+// Package mocks is a generated GoMock package.
+package mocks
+
+import (
+        context "context"
+        reflect "reflect"
+
+        types "github.com/artyomkorchagin/wallet-task/internal/types"
+        gomock "github.com/golang/mock/gomock"
+)
+
+// MockReader is a mock of Reader interface.
+type MockReader struct {
+        ctrl     *gomock.Controller
+        recorder *MockReaderMockRecorder
+}
+
+// MockReaderMockRecorder is the mock recorder for MockReader.
+type MockReaderMockRecorder struct {
+        mock *MockReader
+}
+
+// NewMockReader creates a new mock instance.
+func NewMockReader(ctrl *gomock.Controller) *MockReader <span class="cov0" title="0">{
+        mock := &amp;MockReader{ctrl: ctrl}
+        mock.recorder = &amp;MockReaderMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockReader) EXPECT() *MockReaderMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// CheckOperationExists mocks base method.
+func (m *MockReader) CheckOperationExists(ctx context.Context, referenceID string) (bool, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "CheckOperationExists", ctx, referenceID)
+        ret0, _ := ret[0].(bool)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// CheckOperationExists indicates an expected call of CheckOperationExists.
+func (mr *MockReaderMockRecorder) CheckOperationExists(ctx, referenceID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckOperationExists", reflect.TypeOf((*MockReader)(nil).CheckOperationExists), ctx, referenceID)
+}</span>
+
+// GetBalance mocks base method.
+func (m *MockReader) GetBalance(ctx context.Context, walletUUID string) (int, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetBalance", ctx, walletUUID)
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// GetBalance indicates an expected call of GetBalance.
+func (mr *MockReaderMockRecorder) GetBalance(ctx, walletUUID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBalance", reflect.TypeOf((*MockReader)(nil).GetBalance), ctx, walletUUID)
+}</span>
+
+// MockWriter is a mock of Writer interface.
+type MockWriter struct {
+        ctrl     *gomock.Controller
+        recorder *MockWriterMockRecorder
+}
+
+// MockWriterMockRecorder is the mock recorder for MockWriter.
+type MockWriterMockRecorder struct {
+        mock *MockWriter
+}
+
+// NewMockWriter creates a new mock instance.
+func NewMockWriter(ctrl *gomock.Controller) *MockWriter <span class="cov0" title="0">{
+        mock := &amp;MockWriter{ctrl: ctrl}
+        mock.recorder = &amp;MockWriterMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockWriter) EXPECT() *MockWriterMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// UpdateBalance mocks base method.
+func (m *MockWriter) UpdateBalance(ctx context.Context, wallet *types.WalletUpdateRequest) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "UpdateBalance", ctx, wallet)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// UpdateBalance indicates an expected call of UpdateBalance.
+func (mr *MockWriterMockRecorder) UpdateBalance(ctx, wallet interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBalance", reflect.TypeOf((*MockWriter)(nil).UpdateBalance), ctx, wallet)
+}</span>
+
+// MockReadWriter is a mock of ReadWriter interface.
+type MockReadWriter struct {
+        ctrl     *gomock.Controller
+        recorder *MockReadWriterMockRecorder
+}
+
+// MockReadWriterMockRecorder is the mock recorder for MockReadWriter.
+type MockReadWriterMockRecorder struct {
+        mock *MockReadWriter
+}
+
+// NewMockReadWriter creates a new mock instance.
+func NewMockReadWriter(ctrl *gomock.Controller) *MockReadWriter <span class="cov0" title="0">{
+        mock := &amp;MockReadWriter{ctrl: ctrl}
+        mock.recorder = &amp;MockReadWriterMockRecorder{mock}
+        return mock
+}</span>
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockReadWriter) EXPECT() *MockReadWriterMockRecorder <span class="cov0" title="0">{
+        return m.recorder
+}</span>
+
+// CheckOperationExists mocks base method.
+func (m *MockReadWriter) CheckOperationExists(ctx context.Context, referenceID string) (bool, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "CheckOperationExists", ctx, referenceID)
+        ret0, _ := ret[0].(bool)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// CheckOperationExists indicates an expected call of CheckOperationExists.
+func (mr *MockReadWriterMockRecorder) CheckOperationExists(ctx, referenceID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckOperationExists", reflect.TypeOf((*MockReadWriter)(nil).CheckOperationExists), ctx, referenceID)
+}</span>
+
+// GetBalance mocks base method.
+func (m *MockReadWriter) GetBalance(ctx context.Context, walletUUID string) (int, error) <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetBalance", ctx, walletUUID)
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}</span>
+
+// GetBalance indicates an expected call of GetBalance.
+func (mr *MockReadWriterMockRecorder) GetBalance(ctx, walletUUID interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBalance", reflect.TypeOf((*MockReadWriter)(nil).GetBalance), ctx, walletUUID)
+}</span>
+
+// UpdateBalance mocks base method.
+func (m *MockReadWriter) UpdateBalance(ctx context.Context, wallet *types.WalletUpdateRequest) error <span class="cov0" title="0">{
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "UpdateBalance", ctx, wallet)
+        ret0, _ := ret[0].(error)
+        return ret0
+}</span>
+
+// UpdateBalance indicates an expected call of UpdateBalance.
+func (mr *MockReadWriterMockRecorder) UpdateBalance(ctx, wallet interface{}) *gomock.Call <span class="cov0" title="0">{
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBalance", reflect.TypeOf((*MockReadWriter)(nil).UpdateBalance), ctx, wallet)
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package walletservice
 
 import (
         "context"
@@ -786,7 +960,7 @@ func NewService(repo ReadWriter, redis *redis.Client, logger *zap.Logger) *Servi
 }</span>
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package types
+		<pre class="file" id="file12" style="display: none">package types
 
 import (
         "errors"
@@ -834,7 +1008,7 @@ var (
 )
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package types
+		<pre class="file" id="file13" style="display: none">package types
 
 type WalletUpdateRequest struct {
         WalletUUID  string `json:"valletId" binding:"required"`
