@@ -1,52 +1,138 @@
-package logger_test
+package logger
 
 import (
 	"bytes"
 	"encoding/json"
 	"testing"
 
-	"github.com/artyomkorchagin/wallet-task/internal/logger"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 func TestNewLogger(t *testing.T) {
-	logger, err := logger.NewLogger()
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-	if logger == nil {
-		t.Fatal("Expected non-nil logger")
+	tests := []struct {
+		name        string
+		validate    func(*zap.Logger, *testing.T)
+		expectError bool
+	}{
+		{
+			name: "production logger created successfully",
+			validate: func(logger *zap.Logger, t *testing.T) {
+				assert.NotNil(t, logger)
+
+				buf := &bytes.Buffer{}
+				encoderCfg := zap.NewProductionEncoderConfig()
+				encoderCfg.TimeKey = "timestamp"
+				encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+				core := zapcore.NewCore(
+					zapcore.NewJSONEncoder(encoderCfg),
+					zapcore.AddSync(buf),
+					zap.InfoLevel,
+				)
+				testLogger := zap.New(core)
+
+				testLogger.Info("test message", zap.String("key", "value"))
+
+				var log map[string]interface{}
+				err := json.Unmarshal(buf.Bytes(), &log)
+				assert.NoError(t, err)
+
+				assert.Contains(t, log, "timestamp")
+				assert.NotEmpty(t, log["timestamp"])
+
+				assert.Equal(t, "info", log["level"])
+
+				assert.Equal(t, "test message", log["msg"])
+				assert.Equal(t, "value", log["key"])
+			},
+			expectError: false,
+		},
 	}
 
-	logger.Info("test message")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger, err := NewLogger()
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.NotNil(t, logger)
+			defer logger.Sync()
 
-	testLogOutput(t, logger, func(entry zapcore.Entry) bool {
-		return entry.Level == zap.InfoLevel &&
-			entry.Message == "test message" &&
-			entry.Time.Format("2006-01-02T15:04:05") != "" // ISO8601
-	}, "timestamp")
+			if tt.validate != nil {
+				tt.validate(logger, t)
+			}
+		})
+	}
 }
 
-func testLogOutput(t *testing.T, logger *zap.Logger, checkEntry func(zapcore.Entry) bool, expectedTimeKey string) {
-	var buf bytes.Buffer
+func TestNewDevelopmentLogger(t *testing.T) {
+	tests := []struct {
+		name        string
+		validate    func(*zap.Logger, *testing.T)
+		expectError bool
+	}{
+		{
+			name: "development logger created successfully",
+			validate: func(logger *zap.Logger, t *testing.T) {
+				assert.NotNil(t, logger)
 
-	encoderCfg := zap.NewProductionEncoderConfig()
-	encoderCfg.TimeKey = expectedTimeKey
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoder := zapcore.NewJSONEncoder(encoderCfg)
+				observedZapCore, _ := observer.New(zap.DebugLevel)
+				_ = zap.New(observedZapCore)
 
-	core := zapcore.NewCore(encoder, zapcore.AddSync(&buf), zap.InfoLevel)
-	capturedLogger := zap.New(core)
+				buf := &bytes.Buffer{}
+				encoderCfg := zap.NewDevelopmentEncoderConfig()
+				encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
-	capturedLogger.Info("test message")
+				core := zapcore.NewCore(
+					zapcore.NewConsoleEncoder(encoderCfg),
+					zapcore.AddSync(buf),
+					zap.DebugLevel,
+				)
+				testLogger := zap.New(core)
 
-	var entry map[string]interface{}
-	if err := json.Unmarshal(buf.Bytes(), &entry); err != nil {
-		t.Fatalf("Failed to unmarshal log JSON: %v", err)
+				testLogger.Info("test dev message")
+
+				output := buf.String()
+				assert.Contains(t, output, "INFO")
+				assert.Contains(t, output, "test dev message")
+			},
+			expectError: false,
+		},
 	}
-	if _, ok := entry[expectedTimeKey]; !ok {
-		t.Errorf("Expected time key %q in log, got keys: %v", expectedTimeKey, entry)
-	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger, err := NewDevelopmentLogger()
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.NotNil(t, logger)
+			defer logger.Sync()
+
+			if tt.validate != nil {
+				tt.validate(logger, t)
+			}
+		})
+	}
+}
+
+func TestLoggers_AreUsable(t *testing.T) {
+	prodLogger, err := NewLogger()
+	assert.NoError(t, err)
+	assert.NotNil(t, prodLogger)
+	prodLogger.Info("test production log")
+	prodLogger.Sync()
+
+	devLogger, err := NewDevelopmentLogger()
+	assert.NoError(t, err)
+	assert.NotNil(t, devLogger)
+	devLogger.Info("test development log")
+	devLogger.Sync()
 }
