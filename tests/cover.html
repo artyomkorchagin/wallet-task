@@ -67,7 +67,7 @@
 				
 				<option value="file5">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/GetBalance.go (100.0%)</option>
 				
-				<option value="file6">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/UpdateWallet.go (75.6%)</option>
+				<option value="file6">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/UpdateWallet.go (46.3%)</option>
 				
 				<option value="file7">github.com/artyomkorchagin/wallet-task/internal/repository/postgres/wallet/repo.go (16.7%)</option>
 				
@@ -118,15 +118,6 @@ import (
 
         _ "github.com/jackc/pgx/v5/stdlib"
 )
-
-//        @title                        Comfortel Task
-//        @version                1.0
-
-//        @contact.name        Artyom Korchagin
-//        @contact.email        artyomkorchagin333@gmail.com
-
-//        @host                localhost:3000
-//        @BasePath        /
 
 func main() <span class="cov0" title="0">{
         var err error
@@ -453,21 +444,21 @@ func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateR
                 <span class="cov8" title="1">return fmt.Errorf("failed to load wallet: %w", err)</span>
         }
 
-        <span class="cov8" title="1">newBalance := currentBalance
+        <span class="cov0" title="0">newBalance := currentBalance
         if req.Operation != "DEPOSIT" &amp;&amp; req.Operation != "WITHDRAW" </span><span class="cov0" title="0">{
                 return types.ErrInvalidOperation
         }</span>
-        <span class="cov8" title="1">if req.Operation == "DEPOSIT" </span><span class="cov8" title="1">{
+        <span class="cov0" title="0">if req.Operation == "DEPOSIT" </span><span class="cov0" title="0">{
                 newBalance += req.Amount
         }</span>
-        <span class="cov8" title="1">if req.Operation == "WITHDRAW" </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if req.Operation == "WITHDRAW" </span><span class="cov0" title="0">{
                 if currentBalance &lt; req.Amount </span><span class="cov0" title="0">{
                         return types.ErrInsufficientFunds
                 }</span>
                 <span class="cov0" title="0">newBalance -= req.Amount</span>
         }
 
-        <span class="cov8" title="1">result, err := tx.ExecContext(ctx, `
+        <span class="cov0" title="0">result, err := tx.ExecContext(ctx, `
         UPDATE wallet SET balance = $1, version = version + 1, updated_at = NOW()
         WHERE wallet_uuid = $2 AND version = $3
     `, newBalance, req.WalletUUID, currentVersion)
@@ -476,11 +467,11 @@ func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateR
                 return fmt.Errorf("failed to update wallet: %w", err)
         }</span>
 
-        <span class="cov8" title="1">if rows, _ := result.RowsAffected(); rows == 0 </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if rows, _ := result.RowsAffected(); rows == 0 </span><span class="cov0" title="0">{
                 return types.ErrConcurrentUpdate
         }</span>
 
-        <span class="cov8" title="1">_, err = tx.ExecContext(ctx, `
+        <span class="cov0" title="0">_, err = tx.ExecContext(ctx, `
         UPDATE wallet_operations 
         SET status = 'APPLIED', applied_at = NOW() 
         WHERE reference_id = $1
@@ -490,11 +481,11 @@ func (r *Repository) UpdateBalance(ctx context.Context, req *types.WalletUpdateR
                 return fmt.Errorf("failed to mark as applied: %w", err)
         }</span>
 
-        <span class="cov8" title="1">if err = tx.Commit(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov0" title="0">if err = tx.Commit(); err != nil </span><span class="cov0" title="0">{
                 return fmt.Errorf("failed to commit: %w", err)
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov0" title="0">return nil</span>
 }
 
 func (r *Repository) markOperationFailed(ctx context.Context, referenceID string) error <span class="cov8" title="1">{
